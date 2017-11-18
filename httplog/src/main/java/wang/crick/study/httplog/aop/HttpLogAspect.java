@@ -53,7 +53,7 @@ public class HttpLogAspect {
     }
 
     private String getRequestPath(HttpServletRequest request) {
-        return (null != request.getServletPath() && !"".equals(request.getServletPath()))
+        return (null != request.getServletPath() && request.getServletPath().length() > 0)
                 ? request.getServletPath() : request.getPathInfo();
 
     }
