@@ -9,6 +9,7 @@
     <version>0.0.1</version>
     <modules>
         <module>httplog</module>
+        <module>endpoint</module>
     </modules>
 
     <packaging>pom</packaging>

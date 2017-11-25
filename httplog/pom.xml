@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 
 	<name>httplog</name>
-	<description>Demo project for Spring Boot</description>
+	<description>AOP打印web请求及响应log</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -50,6 +50,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
 
 </project>
