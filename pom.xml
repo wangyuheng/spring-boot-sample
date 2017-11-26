@@ -10,6 +10,7 @@
     <modules>
         <module>httplog</module>
         <module>endpoint</module>
+        <module>globalexception</module>
     </modules>
 
     <packaging>pom</packaging>
