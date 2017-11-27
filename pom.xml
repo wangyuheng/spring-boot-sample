@@ -8,6 +8,7 @@
     <artifactId>spring-boot-sample</artifactId>
     <version>0.0.1</version>
     <modules>
+        <module>all-in-one</module>
         <module>httplog</module>
         <module>endpoint</module>
         <module>globalexception</module>
