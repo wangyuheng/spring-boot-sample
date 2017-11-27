@@ -2,10 +2,7 @@ package wang.crick.study.httplog.aop;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +15,7 @@ import wang.crick.study.httplog.api.RestApiResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Aspect
 public class HttpLogAspect {
@@ -31,6 +25,9 @@ public class HttpLogAspect {
     @Pointcut("@annotation(wang.crick.study.httplog.annotation.HttpLog)")
     public void logAnnotation() {
     }
+
+    private ThreadLocal<Long> startTimeThreadLocal = new ThreadLocal<>();
+    private ThreadLocal<String> traceIdThreadLocal = new ThreadLocal<>();
 
     private Optional<HttpLog> getLogAnnotation(JoinPoint joinPoint) {
         if (joinPoint instanceof MethodInvocationProceedingJoinPoint) {
@@ -55,7 +52,10 @@ public class HttpLogAspect {
     private String getRequestPath(HttpServletRequest request) {
         return (null != request.getServletPath() && request.getServletPath().length() > 0)
                 ? request.getServletPath() : request.getPathInfo();
+    }
 
+    private long costTime() {
+        return System.currentTimeMillis() - startTimeThreadLocal.get();
     }
 
     @Before("logAnnotation()")
@@ -64,14 +64,16 @@ public class HttpLogAspect {
             Optional<HttpLog> httpLog = getLogAnnotation(joinPoint);
             httpLog.ifPresent(anno -> {
                 HttpServletRequest request = getRequest();
+                traceIdThreadLocal.set(UUID.randomUUID().toString());
+                startTimeThreadLocal.set(System.currentTimeMillis());
                 List<String> excludes = Arrays.asList(anno.exclude());
                 List<Object> params = new ArrayList<>();
                 StringBuilder logMsg = new StringBuilder();
-                logMsg.append("REQUEST_LOG. sessionId:{}. ")
+                logMsg.append("REQUEST_LOG. traceId:{}. ")
                         .append("requestUrl: ")
                         .append(getRequestPath(request))
                         .append(" -PARAMS- ");
-                params.add(request.getSession().getId());
+                params.add(traceIdThreadLocal.get());
                 request.getParameterMap().forEach((k, v) -> {
                     if (!excludes.contains(k)) {
                         logMsg.append(k).append(": {}, ");
@@ -92,18 +94,33 @@ public class HttpLogAspect {
         }
     }
 
-
     @AfterReturning(returning = "restApiResponse", pointcut = "logAnnotation()")
     public void response(JoinPoint joinPoint, RestApiResponse restApiResponse) {
         try {
             Optional<HttpLog> httpLog = getLogAnnotation(joinPoint);
             httpLog.ifPresent(anno -> {
                 if (!anno.ignoreResponse()) {
-                    log.info("RESPONSE_LOG. sessionId:{}. result:{}", getRequest().getSession().getId(), restApiResponse);
+                    log.info("RESPONSE_LOG. traceId:{}, result:{}, cost:{}",
+                            traceIdThreadLocal.get(), restApiResponse, costTime());
                 }
             });
         } catch (Exception ignore) {
             log.warn("print response log fail!", ignore);
+        }
+    }
+
+    @AfterThrowing(throwing = "e", pointcut = "logAnnotation()")
+    public void throwing(JoinPoint joinPoint, Exception e) {
+        try {
+            Optional<HttpLog> httpLog = getLogAnnotation(joinPoint);
+            httpLog.ifPresent(anno -> {
+                if (!anno.ignoreResponse()) {
+                    log.info("ERROR_LOG. traceId:{}, cost:{}",
+                            traceIdThreadLocal.get(), costTime(), e);
+                }
+            });
+        } catch (Exception ignore) {
+            log.warn("print error log fail!", ignore);
         }
     }
 
