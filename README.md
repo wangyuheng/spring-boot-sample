@@ -12,4 +12,4 @@
 自定义endpoint，方便监控程序运行时的各种信息，详情见 [endpoint_wiki](https://github.com/wangyuheng/spring-boot-sample/wiki/endpoint_wiki)
 
 ## global_exception
-webapi全局异常捕获处理，详情见 [global_exception_wiki](!https://github.com/wangyuheng/spring-boot-sample/wiki/global_exception_wiki)
+webapi全局异常捕获处理，详情见 [global_exception_wiki](https://github.com/wangyuheng/spring-boot-sample/wiki/global_exception_wiki)
