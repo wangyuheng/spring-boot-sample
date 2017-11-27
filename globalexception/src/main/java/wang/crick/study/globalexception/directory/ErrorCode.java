@@ -1,8 +1,5 @@
 package wang.crick.study.globalexception.directory;
 
-/**
- * Created by crick on 2017/11/26.
- */
 public enum ErrorCode {
     Error(10000, "服务异常"),
     UserIdError(10001, "用户id异常");

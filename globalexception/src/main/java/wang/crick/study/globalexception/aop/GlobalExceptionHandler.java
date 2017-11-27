@@ -1,20 +1,13 @@
 package wang.crick.study.globalexception.aop;
 
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import wang.crick.study.globalexception.directory.ErrorCode;
 import wang.crick.study.globalexception.exception.CustomException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by crick on 2017/11/26.
- */
-@ControllerAdvice(annotations = RestController.class)
-@ResponseBody
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private Map<String, Object> getErrorObject(int code, String message) {
