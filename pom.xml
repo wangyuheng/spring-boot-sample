@@ -12,6 +12,7 @@
         <module>httplog</module>
         <module>endpoint</module>
         <module>globalexception</module>
+        <module>validator</module>
     </modules>
 
     <packaging>pom</packaging>
