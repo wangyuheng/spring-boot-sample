@@ -13,3 +13,7 @@
 
 ## global_exception
 webapi全局异常捕获处理，详情见 [global_exception_wiki](https://github.com/wangyuheng/spring-boot-sample/wiki/global_exception_wiki)
+
+## validator
+bean参数校验，详情见 [validator](https://github.com/wangyuheng/spring-boot-sample/wiki/validator_wiki)
+
