@@ -2,7 +2,7 @@ package wang.crick.study.allinone.directory;
 
 public enum ErrorCode {
     Error(10000, "服务异常"),
-    UserIdError(10001, "用户id异常");
+    VALID_FAIL(11111, "参数校验失败");
 
     private int code;
     private String message;
