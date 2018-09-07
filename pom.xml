@@ -13,6 +13,7 @@
         <module>endpoint</module>
         <module>globalexception</module>
         <module>validator</module>
+        <module>i18n</module>
     </modules>
 
     <packaging>pom</packaging>

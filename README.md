@@ -17,3 +17,5 @@ webapi全局异常捕获处理，详情见 [global_exception_wiki](https://githu
 ## validator
 bean参数校验，详情见 [validator](https://github.com/wangyuheng/spring-boot-sample/wiki/validator_wiki)
 
+## i18n
+国际化实现，详情见 [i18n](https://github.com/wangyuheng/spring-boot-sample/wiki/i18n_wiki)
