@@ -1,5 +1,6 @@
 package wang.crick.study.httplog.aop;
 
+import com.alibaba.fastjson.JSONObject;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.*;
@@ -7,6 +8,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -15,6 +18,7 @@ import wang.crick.study.httplog.api.RestApiResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 @Aspect
@@ -37,6 +41,22 @@ public class HttpLogAspect {
                 Method method = methodSignature.getMethod();
                 if (method.isAnnotationPresent(HttpLog.class)) {
                     return Optional.of(method.getAnnotation(HttpLog.class));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Object> getRequestBodyParam(JoinPoint joinPoint){
+        if (joinPoint instanceof MethodInvocationProceedingJoinPoint) {
+            Signature signature = joinPoint.getSignature();
+            if (signature instanceof MethodSignature) {
+                MethodSignature methodSignature = (MethodSignature) signature;
+                Method method = methodSignature.getMethod();
+                Parameter[] methodParameters = method.getParameters();
+                if (null != methodParameters
+                        && Arrays.stream(methodParameters).anyMatch(p-> AnnotationUtils.findAnnotation(p, RequestBody.class) != null)) {
+                    return Optional.of(joinPoint.getArgs());
                 }
             }
         }
@@ -87,10 +107,15 @@ public class HttpLogAspect {
                         params.add(request.getHeader(param));
                     });
                 }
+                getRequestBodyParam(joinPoint).ifPresent(requestBody->{
+                    logMsg.append(" -REQUEST_BODY_PARAMS- ");
+                    logMsg.append("requestBody").append(": {}, ");
+                    params.add(JSONObject.toJSONString(requestBody));
+                });
                 log.info(logMsg.toString(), params.toArray());
             });
-        } catch (Exception ignore) {
-            log.warn("print request log fail!", ignore);
+        } catch (Exception exception) {
+            log.warn("print request log fail!", exception);
         }
     }
 
@@ -101,11 +126,14 @@ public class HttpLogAspect {
             httpLog.ifPresent(anno -> {
                 if (!anno.ignoreResponse()) {
                     log.info("RESPONSE_LOG. traceId:{}, result:{}, cost:{}",
-                            traceIdThreadLocal.get(), restApiResponse, costTime());
+                            traceIdThreadLocal.get(), JSONObject.toJSONString(restApiResponse), costTime());
                 }
             });
-        } catch (Exception ignore) {
-            log.warn("print response log fail!", ignore);
+        } catch (Exception exception) {
+            log.warn("print response log fail!", exception);
+        } finally {
+            startTimeThreadLocal.remove();
+            traceIdThreadLocal.remove();
         }
     }
 
@@ -119,8 +147,11 @@ public class HttpLogAspect {
                             traceIdThreadLocal.get(), costTime(), e);
                 }
             });
-        } catch (Exception ignore) {
-            log.warn("print error log fail!", ignore);
+        } catch (Exception exception) {
+            log.warn("print error log fail!", exception);
+        } finally {
+            startTimeThreadLocal.remove();
+            traceIdThreadLocal.remove();
         }
     }
 
