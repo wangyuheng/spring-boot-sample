@@ -10,6 +10,15 @@ import java.util.Random;
 @RequestMapping("/user")
 public class UserApi {
 
+    /**
+     * curl -X POST --header "Content-Type: application/json" -H 'username:12b4' --data '{"username":"12b4","password":"34ndd"}' -v 'http://localhost:8080/user/log?age=32'
+     */
+    @PostMapping("/log")
+    @HttpLog()
+    public RestApiResponse<User> addInfo(@RequestBody User user){
+        user.setId(new Random().nextInt());
+        return RestApiResponse.success(user);
+    }
 
     /**
      * curl -H 'username:12b4' -H 'password:34ndd' -v 'http://localhost:8080/user/log/123?age=32'

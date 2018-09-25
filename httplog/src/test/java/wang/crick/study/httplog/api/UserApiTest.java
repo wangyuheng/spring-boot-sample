@@ -1,5 +1,6 @@
 package wang.crick.study.httplog.api;
 
+import com.alibaba.fastjson.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,10 +11,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import wang.crick.study.httplog.domain.User;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -70,6 +71,30 @@ public class UserApiTest {
         assertTrue(console.contains(String.valueOf(age)));
         assertFalse(console.contains(String.valueOf(username)));
         assertFalse(console.contains(String.valueOf(password)));
+    }
+
+    @Test
+    public void test_log_request_body() throws Exception {
+        String uri = "/user/log?age=" + age;
+        User user = new User();
+        user.setUsername(String.valueOf(username));
+        user.setPassword(String.valueOf(password));
+        String content = JSONObject.toJSONString(user);
+        RequestBuilder request = MockMvcRequestBuilders.post(uri)
+                .content(content)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request).andExpect(MockMvcResultMatchers.status().isOk());
+        String console = outContent.toString();
+        assertTrue(console.contains("REQUEST_LOG"));
+        assertFalse(console.contains("HEADER_PARAMS"));
+        assertTrue(console.contains("RESPONSE_LOG"));
+        assertTrue(console.contains("REQUEST_BODY_PARAMS"));
+        assertTrue(console.contains(content));
+        assertTrue(console.contains(String.valueOf(age)));
+        assertTrue(console.contains(String.valueOf(username)));
+        assertTrue(console.contains(String.valueOf(password)));
     }
 
     @Test
